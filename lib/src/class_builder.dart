@@ -38,7 +38,7 @@ class ClassBuilder extends Builder {
     var fields = setters.toList();
 
     var initializingParams =
-        constr.parameters.where((param) => param.isInitializingFormal);
+        constr?.parameters.where((param) => param.isInitializingFormal) ?? [];
     for (var param in initializingParams) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
