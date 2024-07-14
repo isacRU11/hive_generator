@@ -100,6 +100,8 @@ class ClassBuilder extends Builder {
       return '($variable as List$suffix)${_castIterable(type)}';
     } else if (mapChecker.isAssignableFromType(type)) {
       return '($variable as Map$suffix)${_castMap(type)}';
+    } else if (_isEnum(type)) {
+      return '${_displayString(type)}.values.byName($variable)';
     } else {
       return '$variable as ${_displayString(type)}';
     }
@@ -157,9 +159,15 @@ class ClassBuilder extends Builder {
     code.writeln('..writeByte(${getters.length})');
     for (var field in getters) {
       var value = _convertIterable(field.type, 'obj.${field.name}');
-      code.writeln('''
+      if (_isEnum(field.type)) {
+        code.writeln('''
+      ..writeByte(${field.index})
+      ..write($value.name)''');
+      } else {
+        code.writeln('''
       ..writeByte(${field.index})
       ..write($value)''');
+      }
     }
     code.writeln(';');
 
@@ -221,3 +229,6 @@ String _displayString(DartType e) {
   var suffix = _suffixFromType(e);
   return '${e.getDisplayString(withNullability: false)}$suffix';
 }
+
+bool _isEnum(DartType type) =>
+    type.element.runtimeType.toString().contains("Enum");
